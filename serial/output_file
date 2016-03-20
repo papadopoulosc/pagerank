@@ -1,0 +1,54 @@
+Sender: LSF System <lsfadmin@compute-0-130>
+Subject: Job 606044: <papadopoulos-euclidean> in cluster <mghpcc_cluster1> Done
+
+Job <papadopoulos-euclidean> was submitted from host <discovery4> by user <papadopoulos.c> in cluster <mghpcc_cluster1>.
+Job was executed on host(s) <10*compute-0-130>, in queue <ser-par-10g-3>, as user <papadopoulos.c> in cluster <mghpcc_cluster1>.
+</home/papadopoulos.c> was used as the home directory.
+</home/papadopoulos.c/pagerank/serial> was used as the working directory.
+Started at Sun Mar 20 19:44:46 2016
+Results reported at Sun Mar 20 19:44:49 2016
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/sh
+#BSUB -J papadopoulos-euclidean
+#BSUB -o output_file
+#BSUB -e error_file
+#BSUB -n 10
+#BSUB -q ser-par-10g-3 
+export OMP_NUM_THREADS=30
+./pagerank_serial web-Google.txt 916428 0.0001 0.85 >>results_serial.txt
+
+
+
+module load gnu-4.4-compilers
+module load fftw-3.3.3
+module load platform-mpi
+
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :               2.53 sec.
+    Max Memory :             14 MB
+    Average Memory :         14.00 MB
+    Total Requested Memory : -
+    Delta Memory :           -
+    (Delta: the difference between total requested memory and actual max usage.)
+    Max Swap :               57 MB
+
+    Max Processes :          1
+    Max Threads :            1
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file <error_file> for stderr output of this job.
+

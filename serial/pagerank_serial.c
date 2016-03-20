@@ -1,8 +1,3 @@
-/********************************************************************/
-/*    Pagerank project 2016 - Serial version                        */
-/*    By Charalampos Papadopoulos                                   */
-/********************************************************************/
-
 /******************** Includes - Defines ****************/
 #include "pagerank_serial.h"
 #include <stdio.h>
@@ -50,7 +45,7 @@ void Read_from_txt_file(char* filename)
       }
    }
  
-   printf("End of connections insertion!\n");
+   //printf("End of connections insertion!\n");
 
    fclose(fid);
 
@@ -77,7 +72,7 @@ void Read_P_from_txt_file()
          index++;   
       }
    }
-   printf("End of P insertion!");
+   //printf("End of P insertion!");
 
    fclose(fid);	
 
@@ -106,7 +101,7 @@ void Read_E_from_txt_file()
          index++;   
       }
    }
-   printf("End of E insertion!");
+   //printf("End of E insertion!");
 
    fclose(fid);	
 
@@ -160,28 +155,28 @@ void Random_P_E()
 
 int main(int argc, char** argv)
 {
-	// Check input arguments
-	if (argc < 5)
-	{
-		printf("Error in arguments! Three arguments required: graph filename, N, threshold and d\n");
-		return 0;
-	}
+   // Check input arguments
+   if (argc < 5)
+   {
+      printf("Error in arguments! Three arguments required: graph filename, N, threshold and d\n");
+      return 0;
+   } 
 
-	// get arguments 
-	char filename[256];
-	strcpy(filename, argv[1]);
-	N = atoi(argv[2]);
-	threshold = atof(argv[3]);
-	d = atof(argv[4]);
+   // get arguments 
+   char filename[256];
+   strcpy(filename, argv[1]);
+   N = atoi(argv[2]);
+   threshold = atof(argv[3]);
+   d = atof(argv[4]);
     
    int i, j, k;
-	double totaltime;
+   double totaltime;
 
-	// a constant value contributed of all nodes with connectivity = 0
-	// it's going to be addes to all node's new probability
-	double sum = 0;
+   // a constant value contributed of all nodes with connectivity = 0
+   // it's going to be addes to all node's new probability
+   double sum = 0;
     
-	// Allocate memory for N nodes
+   // Allocate memory for N nodes
    Nodes = (Node*) malloc(N * sizeof(Node));
     
    for (i = 0; i < N; i++)
@@ -192,13 +187,13 @@ int main(int argc, char** argv)
 
    Read_from_txt_file(filename);
     
-	// set random probabilities
+   // set random probabilities
    Random_P_E();
-	// OR read probabilities from files
-	//Read_P_from_txt_file();
-	//Read_E_from_txt_file();
+   // OR read probabilities from files
+   //Read_P_from_txt_file();
+   //Read_E_from_txt_file();
     
-	gettimeofday(&start, NULL);
+   gettimeofday(&start, NULL);
     
 	
    /********** Start of algorithm **********/
@@ -209,8 +204,9 @@ int main(int argc, char** argv)
     
    // Or any value > threshold
    double max_error = 1;
-    
-   printf("\nSerial version of Pagerank\n");
+   double node_constant;   
+   //printf("\nSerial version of Pagerank\n");
+ 
 
    // Continue if we don't have convergence yet
    while (max_error > threshold)
@@ -232,11 +228,12 @@ int main(int argc, char** argv)
          if (Nodes[i].con_size != 0)
          {
                 
+            node_constant=Nodes[i].con_size;
             // Compute the total probability, contributed by node's neighbors
             for (j = 0; j < Nodes[i].con_size; j++)
             {
-               index = Nodes[i].To_id[j];	
-                Nodes[index].p_t1 = Nodes[index].p_t1 + (double) Nodes[i].p_t0 / Nodes[i].con_size;
+                index = Nodes[i].To_id[j];	
+                Nodes[index].p_t1 = Nodes[index].p_t1 + (double) Nodes[i].p_t0 /node_constant ;
             }
 
          }
@@ -262,28 +259,28 @@ int main(int argc, char** argv)
             
       }
         
-      printf("Max Error in iteration %d = %f\n", iterations+1, max_error);
+      //printf("Max Error in iteration %d = %f\n", iterations+1, max_error);
       iterations++;
    }
 
-	gettimeofday(&end, NULL);
-    
-	printf("\n");
+   gettimeofday(&end, NULL);
+   /*   
+   printf("\n");
   
-	// Print final probabilitities
+   // Print final probabilitities
    for (i = 0; i < N; i++)
    {
       printf("P_t1[%d] = %f\n",i,Nodes[i].p_t1);
    }
    printf("\n");
-   
+   */
     
    // Print no of iterations
    printf("Total iterations: %d\n", iterations);
 	
    totaltime = (((end.tv_usec - start.tv_usec) / 1.0e6 + end.tv_sec - start.tv_sec) * 1000) / 1000;
 
-	printf("\nTotaltime = %f seconds\n", totaltime);
+   printf("\nTotaltime = %f seconds\n", totaltime);
    printf("End of program!\n");
     
    return (EXIT_SUCCESS);
