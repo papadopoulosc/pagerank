@@ -10,6 +10,10 @@ bsub < sub.bash
 bsub < sub.bash
 bsub < sub.bash
 bsub < sub.bash
+bsub < sub.bash
+bsub < sub.bash
+bsub < sub.bash
+
 sleep 60 
 grep "Runtime" results.txt >>times.txt
 awk '{ total += $3 } END { print total/NR }' times.txt 

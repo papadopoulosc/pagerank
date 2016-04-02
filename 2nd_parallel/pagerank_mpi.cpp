@@ -20,7 +20,7 @@ int len_con_mat=0;
 typedef struct
 {
   double p_t0;
-  double p_t1;
+  double *p_t1;
   double e;
   int con_size;
   int *To_id;
@@ -90,10 +90,10 @@ void Random_P_E(Node *Nodes)
 		for (i = 0; i < N; i++)
 		{
 			   Nodes[i].p_t0 = 0;
-				Nodes[i].p_t1 = 1;
-				Nodes[i].p_t1 = (double) Nodes[i].p_t1 / N;
+				*(Nodes[i].p_t1) = 1;
+				*(Nodes[i].p_t1) = (double) *(Nodes[i].p_t1) / N;
 				
-				sum_P_1 = sum_P_1 + Nodes[i].p_t1;
+				sum_P_1 = sum_P_1 + *(Nodes[i].p_t1);
 				
 				Nodes[i].e = 1;
 				Nodes[i].e = (double) Nodes[i].e / N;
@@ -115,16 +115,17 @@ void Random_P_E(Node *Nodes)
 
 main(int argc, char** argv)
 {
-
+		Node *Nodes;
+		double *matrix_pt1;
 		MPI_Init( &argc, &argv );
 		int rank, size;
 		MPI_Comm_rank( MPI_COMM_WORLD, &rank );
 		MPI_Comm_size( MPI_COMM_WORLD, &size );
 		//Create a new datatype, mpiNode, which is an the equivalent node struct for MPI. This is finally not used though.
-		//MPI_Datatype mpiNode;
-		//MPI_Type_create_resized( MPI_INT, 0, sizeof( Node ), &mpiNode );
-		//MPI_Type_commit( &mpiNode);
-		Node *Nodes;
+		MPI_Datatype mpiNode;
+		MPI_Type_create_resized( MPI_INT, 0, sizeof( Node ), &mpiNode );
+		MPI_Type_commit( &mpiNode);
+		
 
 	
 		// Check input arguments
@@ -151,8 +152,8 @@ main(int argc, char** argv)
 			
 			// Allocate memory for N nodes
 			Nodes = (Node*) malloc(N * sizeof(Node));
-			global_pt0=(double *)malloc(N*sizeof(double));
-			global_pt1=(double *)malloc(N*sizeof(double));
+			//global_pt0=(double *)malloc(N*sizeof(double));
+			matrix_pt1=(double *)malloc(N*sizeof(double));
 			global_big_p_t1=(double *)malloc(N*sizeof(double));
 			
 
@@ -162,6 +163,8 @@ main(int argc, char** argv)
 				Nodes[i].To_id = (int*) malloc(sizeof(int));
 				global_big_p_t1[i]=0.0;
 				local_big_p_t1[i]=0.0;
+				matrix_pt1[i]=0.0;
+				Nodes[i].p_t1=&(matrix_pt1[i]);
 			}
 		
 			Read_from_txt_file(filename,Nodes);
@@ -211,7 +214,7 @@ main(int argc, char** argv)
 
     		//printf("For processor %d , start index is %d, end index is %d\n",rank,start_index,end_index);
 		
-			
+			MPI_Barrier(MPI_COMM_WORLD);
 			start = MPI_Wtime();
 			
 			
@@ -239,8 +242,8 @@ main(int argc, char** argv)
 					for (i = 0; i < N; i++)
 					{
 						// Update the "old" P table with the new one 
-						Nodes[i].p_t0 = Nodes[i].p_t1;  
-						Nodes[i].p_t1 = 0;
+						Nodes[i].p_t0 = *(Nodes[i].p_t1);  
+						*(Nodes[i].p_t1)= 0;
 						
 					}
 					
@@ -259,8 +262,8 @@ main(int argc, char** argv)
 									for (j = 0; j < Nodes[i].con_size; j++)
 									{
 										index = Nodes[i].To_id[j];	
-										Nodes[index].p_t1 = Nodes[index].p_t1 + node_constant;
-										local_big_p_t1[index]=Nodes[index].p_t1 ;
+										*(Nodes[index].p_t1) = *(Nodes[index].p_t1) + node_constant;
+										//local_big_p_t1[index]=*(Nodes[index].p_t1);
 									}
 								
 							}
@@ -271,36 +274,35 @@ main(int argc, char** argv)
 								sum = sum + (double)Nodes[i].p_t0 / N;
 							}
 					}
-					MPI_Reduce(local_big_p_t1, global_big_p_t1, N, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+					
+					MPI_Reduce(matrix_pt1, matrix_pt1, N, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+					//MPI_Reduce(local_big_p_t1, matrix_pt1, N, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 					MPI_Reduce(&sum,&global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
+				
 				if ( rank == 0 ) {	
 					max_error = -1;
-					for (i = 0;i < N; i++)
-					{	
-						Nodes[i].p_t1=global_big_p_t1[i];
-					}
-
-
+					
 					// Compute the new probabilities and find maximum error
 					for (i = 0;i < N; i++)
 					{
-						Nodes[i].p_t1 = d * (Nodes[i].p_t1 + global_sum) + (1 - d) * Nodes[i].e;
+						*(Nodes[i].p_t1) = d * (*(Nodes[i].p_t1) + global_sum) + (1 - d) * Nodes[i].e;
 							
-							if (fabs(Nodes[i].p_t1 - Nodes[i].p_t0) > max_error)
+							if (fabs(*(Nodes[i].p_t1) - Nodes[i].p_t0) > max_error)
 							{
-								max_error = fabs(Nodes[i].p_t1 - Nodes[i].p_t0);
+								max_error = fabs(*(Nodes[i].p_t1) - Nodes[i].p_t0);
 							}
 						
 					}
 					
+					
 					//printf("Max Error in iteration %d = %f\n", iterations+1, max_error);
 				} //End of rank0
 					iterations++;
-		
+					MPI_Bcast( &max_error, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+					MPI_Bcast( matrix_pt1, N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 			}
 			
-		
+		   MPI_Barrier(MPI_COMM_WORLD);
 			stop = MPI_Wtime();
 			/*   
 			     printf("\n");
@@ -319,13 +321,14 @@ main(int argc, char** argv)
 
 			printf("Runtime = %f\n", stop-start);
 			printf("End of program!\n");
-			MPI_Abort(MPI_COMM_WORLD,0);
-			MPI_Finalize();
+			MPI_Type_free(&mpiNode);
+			//MPI_Abort(MPI_COMM_WORLD,0);
+			
 			
 			
 		}
 
-	
+	MPI_Finalize();
    
    
 

@@ -2,7 +2,7 @@
 #BSUB -J Papadopoulos-hello
 #BSUB -o output_file
 #BSUB -e error_file
-#BSUB -n 8 
+#BSUB -n 8
 #BSUB -q ht-10g
 
 
