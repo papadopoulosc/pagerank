@@ -1,5 +1,4 @@
 # pagerank
-Implement the pagerank algorithm in a serial version and then in openmp, mpi, mapreduce, cuda versions
+Implement the pagerank algorithm in a serial version and then in openmp, mpi, matlab version
 
-You may find the serial version in the pagerank/serial folder and the 1st parallel version in the pagerank/1st_parallel folder
-
+Each version has its own folder and Readme file with instructions.
