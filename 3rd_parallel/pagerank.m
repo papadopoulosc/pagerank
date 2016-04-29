@@ -56,11 +56,7 @@ spmd
     max_error=100;
     glob_max_error = max_error;
     p_t1_sum = zeros(n,1);
-    print2=zeros(n,1);
-    print1=zeros(6,460);
-    print3=zeros(n,1);
-    print4=zeros(n,1);
-    print5=zeros(n,1);
+    
     constant=0.001;
     constant1=0.0001;
     size=1;
@@ -83,11 +79,11 @@ spmd
             else
                 for i=1:con_size(j)
                     p_t1(L(j,i)) = p_t1(L(j,i)) +constant;
-                    print1(j,i)=p_t1(L(j,i));
+                    
                 end
             end
         end
-        p_t1_DELETE=p_t1;
+        
         p_t1_sum=gplus(p_t1);
         p_t1=p_t1_sum;
         p_t1 = p*p_t1 + delta;
